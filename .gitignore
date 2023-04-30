@@ -10,3 +10,4 @@
 *.pyc
 
 data/pickled/*
+!data/pickled/.gitkeep
