@@ -1,8 +1,7 @@
-**/.DS_Store/
 .vscode
 .idea
 **/__MACOSX/
-**.DS_Store
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
@@ -10,4 +9,4 @@
 *$py.class
 *.pyc
 
-data
+data/pickled/*
