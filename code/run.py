@@ -77,8 +77,8 @@ def train(model, datasets, checkpoint_path, init_epoch):
 
     print("Fit model on training data")
     history = model.fit(
-        datasets.train_gray,
-        datasets.train_color,
+        datasets.train_L,
+        datasets.train_ab,
         batch_size=64,
         epochs=hp.num_epochs,
         callbacks=callback_list,
@@ -86,7 +86,7 @@ def train(model, datasets, checkpoint_path, init_epoch):
         # We pass some validation for
         # monitoring validation loss and metrics
         # at the end of each epoch
-        validation_data=(datasets.validation_gray, datasets.validation_color),
+        validation_data=(datasets.val_L, datasets.val_ab),
     )
 
     print(history.history)
@@ -95,8 +95,8 @@ def train(model, datasets, checkpoint_path, init_epoch):
 def test(model, datasets):
     """ Testing routine. """
     model.evaluate(
-        x=datasets.test_gray,
-        y=datasets.test_color,
+        x=datasets.test_L,
+        y=datasets.test_ab,
         verbose=1,
     )
     #print(model, test_data)
@@ -171,17 +171,3 @@ ARGS = parse_args()
 
 main()
 
-
-# How to show images
-# def main():
-#     datasets = Datasets()
-#     color, gray = datasets.load_data()
-#     color1 = color[0]
-#     gray1 = gray[0]
-#     plt.imshow(color1)
-#     plt.show()
-#     plt.imshow(gray1, cmap="gray")
-#     plt.show()
-
-#     print(color.shape, gray.shape)
-#     return

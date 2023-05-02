@@ -134,14 +134,14 @@ class Datasets():
         val_n = math.floor(0.9 * TOTAL_LOADED) - train_n
         test_n = TOTAL_LOADED - math.floor(0.9 * TOTAL_LOADED)
         # Load train images
-        self.train_L = load_data("/train_L", train_n)
-        self.train_ab = load_data("/train_ab", train_n)
+        self.train_L = load_data("train_L", train_n)
+        self.train_ab = load_data("train_ab", train_n)
         # Load validation images
-        self.val_L = load_data("/val_L", val_n)
-        self.val_ab = load_data("/val_ab", val_n)
+        self.val_L = load_data("val_L", val_n)
+        self.val_ab = load_data("val_ab", val_n)
         # Load test images
-        self.test_L = load_data("/test_L", test_n)
-        self.test_ab = load_data("/test_ab", test_n)
+        self.test_L = load_data("test_L", test_n)
+        self.test_ab = load_data("test_ab", test_n)
 
 
 def main():
