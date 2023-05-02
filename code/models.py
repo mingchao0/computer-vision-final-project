@@ -39,6 +39,38 @@ class CNNModel(tf.keras.Model):
     #     """ Loss function for the model. """
     #     #TODO: find new loss function
     #     return tf.keras.losses.MeanSquaredError(labels, predictions)
+
+class RESCNNModel(tf.keras.Model):
+    """ CNN that uses ResNet """
+
+    def __init__(self):
+        super(CNNModel, self).__init__()
+
+        self.optimizer = tf.keras.optimizers.SGD()
+
+        RES = tf.keras.applications.resnet50.ResNet50()
+
+        
+
+        self.architecture = [
+              Conv2D(3, 3, 1, activation="relu", padding="same"), 
+              MaxPool2D(2, padding="same"),
+              UpSampling2D(size=(2, 2))
+        ]
+
+    def call(self, x):
+        """ Passes input image through the network. """
+
+        for layer in self.architecture:
+            x = layer(x)
+
+        return x
+
+    # @staticmethod
+    # def loss_fn(labels, predictions):
+    #     """ Loss function for the model. """
+    #     #TODO: find new loss function
+    #     return tf.keras.losses.MeanSquaredError(labels, predictions)
     
 class GANModel(tf.keras.Model):
     """ Your own neural network model. """

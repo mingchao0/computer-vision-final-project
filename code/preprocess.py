@@ -1,13 +1,14 @@
 import os
 import random
 from skimage import io, img_as_float32
-from skimage.color import rgba2rgb, rgb2gray
+from skimage.color import rgba2rgb, rgb2gray, rgb2lab
 from tqdm import tqdm
 import numpy as np
 import pickle
 import math
 
 DATA_DIR = "../data"
+TOTAL_LOADED = 10000  # Limit 99,990
 
 
 def get_unique_ids(part):
@@ -76,21 +77,50 @@ def preprocess():
         store_data("test_gray", test_gray_imgs)
 
 
-def store_data(file_name, imgs):
-    file = open(DATA_DIR + "/pickled/" + file_name, "ab")
+def store_data(file_path, imgs):
+    file = open(DATA_DIR + "/pickled/" + file_path, "ab")
     pickle.dump(imgs, file)
     file.close()
 
 
-def load_data(file_name):
+def load_data(file_path, num_imgs):
     imgs = []
-    file = open(DATA_DIR + "/pickled/" + file_name, "rb")
-    while True:
-        try:
-            imgs.append(pickle.load(file))
-        except EOFError:
-            file.close()
-            return np.concatenate(imgs)
+    file = open(DATA_DIR + "/pickled/" + file_path, "rb")
+    for _ in range(num_imgs):
+        imgs.append(pickle.load(file))
+
+    file.close()
+    return np.concatenate(imgs)
+
+
+def get_LAB_images():
+    data = Datasets()
+    print("Storing training images")
+    for img in tqdm(data.train_color_imgs, total=len(data.train_color_imgs)):
+        lab_img = rgb2lab(img)
+        L = lab_img[:, :, 0]
+        L = np.expand_dims(L, axis=-1)
+        ab = lab_img[:, :, 1:]
+        store_data("train_L", [L])
+        store_data("train_ab", [ab])
+
+    print("Storing validation images")
+    for img in tqdm(data.val_color_imgs, total=len(data.val_color_imgs)):
+        lab_img = rgb2lab(img)
+        L = lab_img[:, :, 0]
+        L = np.expand_dims(L, axis=-1)
+        ab = lab_img[:, :, 1:]
+        store_data("val_L", [L])
+        store_data("val_ab", [ab])
+
+    print("Storing test images")
+    for img in tqdm(data.test_color_imgs, total=len(data.test_color_imgs)):
+        lab_img = rgb2lab(img)
+        L = lab_img[:, :, 0]
+        L = np.expand_dims(L, axis=-1)
+        ab = lab_img[:, :, 1:]
+        store_data("test_L", [L])
+        store_data("test_ab", [ab])
 
 
 class Datasets():
@@ -99,29 +129,29 @@ class Datasets():
     for preprocessing.
     """
 
-    def __init__(self, is_stored=True):
-        if not is_stored:
-            preprocess()
-
+    def __init__(self):
+        train_n = math.floor(0.8 * TOTAL_LOADED)
+        val_n = math.floor(0.9 * TOTAL_LOADED) - train_n
+        test_n = TOTAL_LOADED - math.floor(0.9 * TOTAL_LOADED)
         # Load train images
-        self.train_rgb_imgs = load_data("train_rgb")
-        self.train_gray_imgs = load_data("train_gray")
+        self.train_L = load_data("/train_L", train_n)
+        self.train_ab = load_data("/train_ab", train_n)
         # Load validation images
-        self.val_rgb_imgs = load_data("validation_rgb")
-        self.val_gray_imgs = load_data("validation_gray")
+        self.val_L = load_data("/val_L", val_n)
+        self.val_ab = load_data("/val_ab", val_n)
         # Load test images
-        self.test_rgb_imgs = load_data("test_rgb")
-        self.test_gray_imgs = load_data("test_gray")
+        self.test_L = load_data("/test_L", test_n)
+        self.test_ab = load_data("/test_ab", test_n)
 
 
 def main():
     data = Datasets()
-    print(f"Train RGB: {data.train_rgb_imgs.shape}")
-    print(f"Train gray: {data.train_gray_imgs.shape}")
-    print(f"Val RGB: {data.val_rgb_imgs.shape}")
-    print(f"Val gray: {data.val_gray_imgs.shape}")
-    print(f"Test RGB: {data.test_rgb_imgs.shape}")
-    print(f"Test gray: {data.test_gray_imgs.shape}")
+    print(f"Train L: {data.train_L.shape}")
+    print(f"Train ab: {data.train_ab.shape}")
+    print(f"Val L: {data.val_L.shape}")
+    print(f"Val ab: {data.val_ab.shape}")
+    print(f"Test L: {data.test_L.shape}")
+    print(f"Test ab: {data.test_ab.shape}")
 
 
 if __name__ == '__main__':
