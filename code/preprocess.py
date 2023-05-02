@@ -7,22 +7,22 @@ import numpy as np
 import pickle
 import math
 
-DATA_DIR = "../data"
+DEFAULT_DATA_DIR = "../data"
 TOTAL_LOADED = 10000  # Limit 99,990
 
 
-def get_unique_ids(part):
-    id_folders = os.listdir(DATA_DIR + "/raw/" + part)
+def get_unique_ids(part, data_dir=DEFAULT_DATA_DIR):
+    id_folders = os.listdir(data_dir + "/raw/" + part)
     rgb_imgs = []
     gray_imgs = []
 
     for id in tqdm(id_folders, total=len(id_folders)):
         # Ignore hidden files
         if not id.startswith("."):
-            all_faces = os.listdir(DATA_DIR + "/raw/" + part + "/" + id)
+            all_faces = os.listdir(data_dir + "/raw/" + part + "/" + id)
             # Randomly choose image for identity
             chosen_face = random.choice(all_faces)
-            chosen_face = io.imread(DATA_DIR + "/raw/" + part + "/" +
+            chosen_face = io.imread(data_dir + "/raw/" + part + "/" +
                                     id + "/" + chosen_face)
             # Convert image from RGBA to RGB and grayscale
             rgb_face = rgba2rgb(chosen_face)
@@ -77,15 +77,15 @@ def preprocess():
         store_data("test_gray", test_gray_imgs)
 
 
-def store_data(file_path, imgs):
-    file = open(DATA_DIR + "/pickled/" + file_path, "ab")
+def store_data(file_path, imgs, data_dir=DEFAULT_DATA_DIR):
+    file = open(data_dir + "/pickled/" + file_path, "ab")
     pickle.dump(imgs, file)
     file.close()
 
 
-def load_data(file_path, num_imgs):
+def load_data(data_dir, filename, num_imgs):
     imgs = []
-    file = open(DATA_DIR + "/pickled/" + file_path, "rb")
+    file = open(data_dir + "/pickled/" + filename, "rb")
     for _ in range(num_imgs):
         imgs.append(pickle.load(file))
 
@@ -129,19 +129,19 @@ class Datasets():
     for preprocessing.
     """
 
-    def __init__(self):
+    def __init__(self, data_dir):
         train_n = math.floor(0.8 * TOTAL_LOADED)
         val_n = math.floor(0.9 * TOTAL_LOADED) - train_n
         test_n = TOTAL_LOADED - math.floor(0.9 * TOTAL_LOADED)
         # Load train images
-        self.train_L = load_data("train_L", train_n)
-        self.train_ab = load_data("train_ab", train_n)
+        self.train_L = load_data(data_dir, "train_L", train_n)
+        self.train_ab = load_data(data_dir, "train_ab", train_n)
         # Load validation images
-        self.val_L = load_data("val_L", val_n)
-        self.val_ab = load_data("val_ab", val_n)
+        self.val_L = load_data(data_dir, "val_L", val_n)
+        self.val_ab = load_data(data_dir, "val_ab", val_n)
         # Load test images
-        self.test_L = load_data("test_L", test_n)
-        self.test_ab = load_data("test_ab", test_n)
+        self.test_L = load_data(data_dir, "test_L", test_n)
+        self.test_ab = load_data(data_dir, "test_ab", test_n)
 
 
 def main():

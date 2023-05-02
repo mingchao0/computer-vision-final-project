@@ -37,7 +37,7 @@ def parse_args():
         help='''Which model to use''')
     parser.add_argument(
         '--data',
-        default='TODO',
+        default='../data',
         help='Location where the dataset is stored.')
     parser.add_argument(
         '--load-checkpoint',
@@ -119,7 +119,7 @@ def main():
         init_epoch = int(re.match(regex, ARGS.load_checkpoint).group(1)) + 1
         timestamp = os.path.basename(os.path.dirname(ARGS.load_checkpoint))
 
-    datasets = Datasets()
+    datasets = Datasets(ARGS.data)
     print("Completed loading datasets")
 
     if ARGS.model == 'cnn':
