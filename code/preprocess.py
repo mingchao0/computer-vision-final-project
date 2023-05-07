@@ -134,14 +134,14 @@ class Datasets():
         val_n = math.floor(0.9 * TOTAL_LOADED) - train_n
         test_n = TOTAL_LOADED - math.floor(0.9 * TOTAL_LOADED)
         # Load train images
-        self.train_L = load_data("/train_L", train_n)
-        self.train_ab = load_data("/train_ab", train_n)
+        self.train_L = load_data("normalized/train_L", train_n)
+        self.train_ab = load_data("normalized/train_ab", train_n)
         # Load validation images
-        self.val_L = load_data("/val_L", val_n)
-        self.val_ab = load_data("/val_ab", val_n)
+        self.val_L = load_data("normalized/val_L", val_n)
+        self.val_ab = load_data("normalized/val_ab", val_n)
         # Load test images
-        self.test_L = load_data("/test_L", test_n)
-        self.test_ab = load_data("/test_ab", test_n)
+        self.test_L = load_data("normalized/test_L", test_n)
+        self.test_ab = load_data("normalized/test_ab", test_n)
 
 
 def main():
@@ -152,7 +152,3 @@ def main():
     print(f"Val ab: {data.val_ab.shape}")
     print(f"Test L: {data.test_L.shape}")
     print(f"Test ab: {data.test_ab.shape}")
-
-
-if __name__ == '__main__':
-    main()
