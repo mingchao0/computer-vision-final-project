@@ -1,21 +1,22 @@
 import os
 import random
-from skimage import io, img_as_float32
-from skimage.color import rgba2rgb, rgb2gray, rgb2lab
+from skimage import io, img_as_ubyte
+from skimage.color import rgba2rgb, rgb2lab, lab2rgb
 from tqdm import tqdm
 import numpy as np
 import pickle
 import math
+import matplotlib.pyplot as plt
 
-#DATA_DIR = "../data"
-DATA_DIR = "../../drive/Shareddrives"
-TOTAL_LOADED = 10000  # Limit 99,990
+DATA_DIR = "../data"
+# DATA_DIR = "../../drive/Shareddrives"
+TOTAL_LOADED = 1000  # Limit 99,990
 
 
 def get_unique_ids(part):
     id_folders = os.listdir(DATA_DIR + "/raw/" + part)
-    rgb_imgs = []
-    gray_imgs = []
+    L_chans = []
+    ab_chans = []
 
     for id in tqdm(id_folders, total=len(id_folders)):
         # Ignore hidden files
@@ -25,18 +26,20 @@ def get_unique_ids(part):
             chosen_face = random.choice(all_faces)
             chosen_face = io.imread(DATA_DIR + "/raw/" + part + "/" +
                                     id + "/" + chosen_face)
-            # Convert image from RGBA to RGB and grayscale
-            rgb_face = rgba2rgb(chosen_face)
-            rgb_face = img_as_float32(rgb_face)
-            gray_face = rgb2gray(rgb_face)
-            gray_face = img_as_float32(gray_face)
-            gray_face = np.expand_dims(gray_face, axis=-1)
+            # Convert image from RGBA to Lab
+            rgb_face = img_as_ubyte(rgba2rgb(chosen_face)).astype("float32")
+            lab_face = rgb2lab(1.0 / 255 * rgb_face)
 
-            rgb_imgs.append(rgb_face)
-            gray_imgs.append(gray_face)
+            L = lab_face[:, :, 0]
+            L = np.expand_dims(L, axis=-1)
+            ab = lab_face[:, :, 1:]
+            ab /= 128
 
-    print(f"Identities loaded: {len(rgb_imgs)}")
-    return np.array(rgb_imgs), np.array(gray_imgs)
+            L_chans.append(L)
+            ab_chans.append(ab)
+
+    print(f"Identities loaded: {len(L_chans)}")
+    return np.array(L_chans), np.array(ab_chans)
 
 
 def preprocess():
@@ -44,38 +47,46 @@ def preprocess():
 
     for i, part in enumerate(parts):
         print(f"Preprocessing part {i + 1}")
-        rgb_imgs, gray_imgs = get_unique_ids(part)
+        L_chans, ab_chans = get_unique_ids(part)
 
         # Train/validation/test split: 80-10-10
-        idxs = np.random.permutation(len(rgb_imgs))
-        train_i = math.floor(0.8 * len(rgb_imgs))
-        val_i = math.floor(0.9 * len(rgb_imgs))
+        idxs = np.random.permutation(len(L_chans))
+        train_i = math.floor(0.8 * len(L_chans))
+        val_i = math.floor(0.9 * len(L_chans))
 
         train_idxs = idxs[:train_i]
         val_idxs = idxs[train_i:val_i]
         test_idxs = idxs[val_i:]
 
         # Store in file for train images
-        train_rgb_imgs = rgb_imgs[train_idxs]
-        train_gray_imgs = gray_imgs[train_idxs]
-        print("Storing in file for train RGB images")
-        store_data("train_rgb", train_rgb_imgs)
-        print("Storing in file for train gray images")
-        store_data("train_gray", train_gray_imgs)
+        train_L = L_chans[train_idxs]
+        train_ab = ab_chans[train_idxs]
+        print("Storing in file for train L channel")
+        for L in tqdm(train_L, total=len(train_L)):
+            store_data("normalized/train_L", L)
+        print("Storing in file for train ab channel")
+        for ab in tqdm(train_ab, total=len(train_ab)):
+            store_data("normalized/train_ab", ab)
+
         # Store in file for validation images
-        val_rgb_imgs = rgb_imgs[val_idxs]
-        val_gray_imgs = gray_imgs[val_idxs]
-        print("Storing in file for validation RGB images")
-        store_data("validation_rgb", val_rgb_imgs)
-        print("Storing in file for validation gray images")
-        store_data("validation_gray", val_gray_imgs)
+        val_L = L_chans[val_idxs]
+        val_ab = ab_chans[val_idxs]
+        print("Storing in file for validation L channel")
+        for L in tqdm(val_L, total=len(val_L)):
+            store_data("normalized/val_L", L)
+        print("Storing in file for validation ab channel")
+        for ab in tqdm(val_ab, total=len(val_ab)):
+            store_data("normalized/val_ab", ab)
+
         # Store in file for test images
-        test_rgb_imgs = rgb_imgs[test_idxs]
-        test_gray_imgs = gray_imgs[test_idxs]
-        print("Storing in file for test RGB images")
-        store_data("test_rgb", test_rgb_imgs)
-        print("Storing in file for test gray images")
-        store_data("test_gray", test_gray_imgs)
+        test_L = L_chans[test_idxs]
+        test_ab = ab_chans[test_idxs]
+        print("Storing in file for test L channel")
+        for L in tqdm(test_L, total=len(test_L)):
+            store_data("normalized/test_L", L)
+        print("Storing in file for test ab channel")
+        for ab in tqdm(test_ab, total=len(test_ab)):
+            store_data("normalized/test_ab", ab)
 
 
 def store_data(file_path, imgs):
@@ -94,34 +105,34 @@ def load_data(file_path, num_imgs):
     return np.concatenate(imgs)
 
 
-def get_LAB_images():
-    data = Datasets()
-    print("Storing training images")
-    for img in tqdm(data.train_color_imgs, total=len(data.train_color_imgs)):
-        lab_img = rgb2lab(img)
-        L = lab_img[:, :, 0]
-        L = np.expand_dims(L, axis=-1)
-        ab = lab_img[:, :, 1:]
-        store_data("train_L", [L])
-        store_data("train_ab", [ab])
+# def get_LAB_images():
+#     data = Datasets()
+#     print("Storing training images")
+#     for img in tqdm(data.train_color_imgs, total=len(data.train_color_imgs)):
+#         lab_img = rgb2lab(img)
+#         L = lab_img[:, :, 0]
+#         L = np.expand_dims(L, axis=-1)
+#         ab = lab_img[:, :, 1:]
+#         store_data("train_L", [L])
+#         store_data("train_ab", [ab])
 
-    print("Storing validation images")
-    for img in tqdm(data.val_color_imgs, total=len(data.val_color_imgs)):
-        lab_img = rgb2lab(img)
-        L = lab_img[:, :, 0]
-        L = np.expand_dims(L, axis=-1)
-        ab = lab_img[:, :, 1:]
-        store_data("val_L", [L])
-        store_data("val_ab", [ab])
+#     print("Storing validation images")
+#     for img in tqdm(data.val_color_imgs, total=len(data.val_color_imgs)):
+#         lab_img = rgb2lab(img)
+#         L = lab_img[:, :, 0]
+#         L = np.expand_dims(L, axis=-1)
+#         ab = lab_img[:, :, 1:]
+#         store_data("val_L", [L])
+#         store_data("val_ab", [ab])
 
-    print("Storing test images")
-    for img in tqdm(data.test_color_imgs, total=len(data.test_color_imgs)):
-        lab_img = rgb2lab(img)
-        L = lab_img[:, :, 0]
-        L = np.expand_dims(L, axis=-1)
-        ab = lab_img[:, :, 1:]
-        store_data("test_L", [L])
-        store_data("test_ab", [ab])
+#     print("Storing test images")
+#     for img in tqdm(data.test_color_imgs, total=len(data.test_color_imgs)):
+#         lab_img = rgb2lab(img)
+#         L = lab_img[:, :, 0]
+#         L = np.expand_dims(L, axis=-1)
+#         ab = lab_img[:, :, 1:]
+#         store_data("test_L", [L])
+#         store_data("test_ab", [ab])
 
 
 class Datasets():
@@ -135,24 +146,20 @@ class Datasets():
         val_n = math.floor(0.9 * TOTAL_LOADED) - train_n
         test_n = TOTAL_LOADED - math.floor(0.9 * TOTAL_LOADED)
         # Load train images
-        self.train_L = load_data("train_L", train_n)
-        self.train_ab = load_data("train_ab", train_n)
+        self.train_L = load_data("normalized/train_L", train_n)
+        self.train_ab = load_data("normalized/train_ab", train_n)
         # Load validation images
-        self.val_L = load_data("val_L", val_n)
-        self.val_ab = load_data("val_ab", val_n)
+        self.val_L = load_data("normalized/val_L", val_n)
+        self.val_ab = load_data("normalized/val_ab", val_n)
         # Load test images
-        self.test_L = load_data("test_L", test_n)
-        self.test_ab = load_data("test_ab", test_n)
+        self.test_L = load_data("normalized/test_L", test_n)
+        self.test_ab = load_data("normalized/test_ab", test_n)
 
 
 def main():
+    # preprocess()
     data = Datasets()
-    print(f"Train L: {data.train_L.shape}")
-    print(f"Train ab: {data.train_ab.shape}")
-    print(f"Val L: {data.val_L.shape}")
-    print(f"Val ab: {data.val_ab.shape}")
-    print(f"Test L: {data.test_L.shape}")
-    print(f"Test ab: {data.test_ab.shape}")
+    print(data.train_L.shape)
 
 
 if __name__ == '__main__':

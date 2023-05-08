@@ -23,45 +23,60 @@ class CNNModel(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         self.architecture = [
-            Conv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=64, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
-            Conv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same'),
-            BatchNormalization(),
-            MaxPool2D(pool_size=(2, 2)),
-            Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same'),
-            BatchNormalization(),
-            Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=64, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             MaxPool2D(pool_size=(2, 2)),
-            Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=128, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
-            Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
-            BatchNormalization(),
-            Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=128, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             MaxPool2D(pool_size=(2, 2)),
-            Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=256, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
-            Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=256, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
-            Conv2D(filters=512, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=256, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
+            BatchNormalization(),
+            MaxPool2D(pool_size=(2, 2)),
+            Conv2D(filters=512, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
+            BatchNormalization(),
+            Conv2D(filters=512, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
+            BatchNormalization(),
+            Conv2D(filters=512, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             MaxPool2D(pool_size=(2, 2)),
 
 
             UpSampling2D(size=(2, 2)),
-            Conv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=256, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             UpSampling2D(size=(2, 2)),
-            Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=128, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             UpSampling2D(size=(2, 2)),
-            Conv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=64, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
             UpSampling2D(size=(2, 2)),
-            Conv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same'),
+            Conv2D(filters=32, kernel_size=(3, 3),
+                   activation='relu', padding='same'),
             BatchNormalization(),
-            Conv2D(filters=2, kernel_size=(1, 1), activation='relu', padding='same'),
+            Conv2D(filters=2, kernel_size=(1, 1),
+                   activation='relu', padding='same'),
 
 
             Flatten(),
@@ -69,7 +84,6 @@ class CNNModel(tf.keras.Model):
             Dense(units=112 * 112 * 2, activation="relu"),
             tf.keras.layers.Reshape((112, 112, 2))
         ]
-
 
     def call(self, x):
         """ Passes input image through the network. """
@@ -121,8 +135,8 @@ class RESCNNModel(tf.keras.Model):
             BatchNormalization(),
             ReLU(),
             # (112, 112, 32)
-            Conv2D(2, 3, padding="same"),
-            ReLU(),
+            Conv2D(2, 3, activation="tanh", padding="same"),
+            # ReLU(),
             # (112, 112, 2)
         ]
 
@@ -141,7 +155,7 @@ class RESCNNModel(tf.keras.Model):
     def loss_fn(labels, predictions):
         """ Loss function for the model. """
         # TODO: find new loss function
-        #return tf.keras.losses.MeanSquaredError(labels, predictions)
+        # return tf.keras.losses.MeanSquaredError(labels, predictions)
         return tf.keras.losses.MeanAbsoluteError(labels, predictions)
 
 
@@ -293,7 +307,8 @@ class GANModel():
 
     def generator_loss(self, fake_out, real_out):
         #mse = tf.keras.losses.MeanSquaredError(reduction='sum_over_batch_size')
-        mse = tf.keras.losses.MeanAbsoluteError(reduction='sum_over_batch_size')
+        mse = tf.keras.losses.MeanAbsoluteError(
+            reduction='sum_over_batch_size')
         return mse(fake_out, real_out)
 
     def discriminator_loss(self, real_out, fake_out):
