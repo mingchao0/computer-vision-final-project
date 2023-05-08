@@ -145,27 +145,57 @@ def test(model, datasets):
     #print(model, test_data)
 
 
+# def predict(model, datasets):
+#     l_test = datasets.test_L[:5]
+#     ab_test = datasets.test_ab[:5]
+
+#     ab_model = model.predict(l_test)
+
+#     for i in range(5):
+#         # Print just L
+#         L = l_test[i]
+#         grey_channel = L[:, :, 0]
+
+#         real_LAB = np.concatenate((L,)*3, axis=-1)
+#         real_LAB[:, :, 1:] = ab_test[i]
+
+#         predicted_LAB = np.concatenate((L,)*3, axis=-1)
+#         predicted_LAB[:, :, 1:] = ab_model[i]
+
+#         real_RGB = lab2rgb(real_LAB)
+#         pred_RGB = lab2rgb(predicted_LAB)
+
+#         plt.imshow(grey_channel, cmap="gray")
+#         plt.show()
+#         plt.imshow(real_RGB)
+#         plt.show()
+#         plt.imshow(pred_RGB)
+#         plt.show()
+
+#         # Print real LAB
+#         # Print predicted LAB
+
+
 def predict(model, datasets):
     l_test = datasets.test_L[:5]
-    ab_test = datasets.test_ab[:5]
+    ab_test = datasets.test_ab[:5] * 128
 
-    ab_model = model.predict(l_test)
+    ab_model = model.predict(l_test) * 128
 
     for i in range(5):
         # Print just L
-        L = l_test[i]
-        grey_channel = L[:, :, 0]
+        real_lab = np.zeros((112, 112, 3))
+        pred_lab = np.zeros((112, 112, 3))
 
-        real_LAB = np.concatenate((L,)*3, axis=-1)
-        real_LAB[:, :, 1:] = ab_test[i]
+        real_lab[:, :, 0] = l_test[i][:, :, 0]
+        real_lab[:, :, 1:] = ab_test[i]
+        pred_lab[:, :, 0] = l_test[i][:, :, 0]
+        pred_lab[:, :, 1:] = ab_model[i]
 
-        predicted_LAB = np.concatenate((L,)*3, axis=-1)
-        predicted_LAB[:, :, 1:] = ab_model[i]
+        real_RGB = lab2rgb(real_lab)
+        pred_RGB = lab2rgb(pred_lab)
 
-        real_RGB = lab2rgb(real_LAB)
-        pred_RGB = lab2rgb(predicted_LAB)
-
-        plt.imshow(grey_channel, cmap="gray")
+        plt.imshow(l_test[i][:, :, 0], cmap="gray")
         plt.show()
         plt.imshow(real_RGB)
         plt.show()

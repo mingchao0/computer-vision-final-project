@@ -8,8 +8,8 @@ import pickle
 import math
 import matplotlib.pyplot as plt
 
-# DATA_DIR = "../data"
-DATA_DIR = "../../drive/Shareddrives"
+DATA_DIR = "../data"
+# DATA_DIR = "../../drive/Shareddrives"
 TOTAL_LOADED = 1000  # Limit 99,990
 
 
