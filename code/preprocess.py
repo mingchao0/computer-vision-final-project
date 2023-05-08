@@ -8,8 +8,8 @@ import pickle
 import math
 import matplotlib.pyplot as plt
 
-# DATA_DIR = "../data"
-DATA_DIR = "../../drive/Shareddrives"
+DATA_DIR = "../data"
+# DATA_DIR = "../../drive/Shareddrives"
 TOTAL_LOADED = 1000  # Limit 99,990
 
 
@@ -99,7 +99,7 @@ def load_data(file_path, num_imgs):
     imgs = []
     file = open(DATA_DIR + "/pickled/" + file_path, "rb")
     for _ in range(num_imgs):
-        imgs.append(pickle.load(file))
+        imgs.append([pickle.load(file)])  # Wrap for concatenation
 
     file.close()
     return np.concatenate(imgs)
