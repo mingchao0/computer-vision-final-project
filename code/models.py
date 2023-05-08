@@ -7,7 +7,7 @@ Brown University
 import tensorflow as tf
 from keras.optimizers import Adam
 from keras.layers import \
-    Conv2D, MaxPool2D, Dropout, Flatten, Dense, UpSampling2D, BatchNormalization, ReLU
+    Conv2D, MaxPool2D, Dropout, Flatten, Dense, UpSampling2D, BatchNormalization, ReLU, LeakyReLU
 import numpy as np
 import hyperparameters as hp
 from skimage.color import lab2rgb
@@ -116,24 +116,24 @@ class RESCNNModel(tf.keras.Model):
 
         self.head = [
             # input size: (4, 4, 2048)
-            Conv2D(256, 3, padding="same"),
+            Conv2D(256, 3, activation="relu", padding="same"),
             BatchNormalization(),
-            ReLU(),
+            # ReLU(),
             UpSampling2D(size=(7, 7)),
             # (28, 28, 256)
-            Conv2D(128, 3, padding="same"),
+            Conv2D(128, 3, activation="relu", padding="same"),
             BatchNormalization(),
-            ReLU(),
+            # ReLU(),
             UpSampling2D(size=(2, 2)),
             # (56, 56, 128)
-            Conv2D(64, 3, padding="same"),
+            Conv2D(64, 3, activation="relu", padding="same"),
             BatchNormalization(),
-            ReLU(),
+            # ReLU(),
             UpSampling2D(size=(2, 2)),
             # (112, 112, 64)
-            Conv2D(32, 3, padding="same"),
+            Conv2D(32, 3, activation="relu", padding="same"),
             BatchNormalization(),
-            ReLU(),
+            # ReLU(),
             # (112, 112, 32)
             Conv2D(2, 3, activation="tanh", padding="same"),
             # ReLU(),
